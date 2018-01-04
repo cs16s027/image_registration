@@ -18,6 +18,11 @@ class DQNAgent:
         self.learning_rate = 0.001
         self.model = self._build_model()
         self.memory = deque(maxlen=2000)
+        self.epsilon = 1.0  # exploration rate
+        self.epsilon_min = 0.01
+        self.epsilon_decay = 0.995
+        self.learning_rate = 0.001
+        self.action_size = 5
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
@@ -42,7 +47,7 @@ class DQNAgent:
         x = Dense(512, activation = 'relu', name = 'fc_1')(x)
         x = Dense(256, activation = 'relu', name = 'fc_2')(x)
         x = Dense(128, activation = 'relu', name = 'fc_3')(x)
-        y = Dense(4, activation = 'linear', name = 'Y')(x)
+        y = Dense(5, activation = 'linear', name = 'Y')(x)
         model = Model(input_img, y)
 
         model.compile(loss='mse',\
@@ -50,18 +55,13 @@ class DQNAgent:
         print model.summary()
         return model
 
-    def act(self, tstate):
-        greedyfellow = []
-        for a in range(4):
-            cstate = deepcopy(tstate)
-            direction = a / 2
-            sign = 1 if a % 2 == 0 else -1
-            cstate[direction] += sign
-            greedyfellow.append(np.sum((cstate - self.target) ** 2))
-        greedyfellow = np.array(greedyfellow)
-        min_actions = np.argwhere(greedyfellow == np.min(greedyfellow))[0]
-        index = np.random.randint(0, len(min_actions))
-        return min_actions[index]
+    def act(self, state):
+        print state.shape
+        state = np.reshape(state, (1, 3, 64, 64))
+        if np.random.rand() <= self.epsilon:
+            return random.randrange(self.action_size)
+        act_values = self.model.predict(state)
+        return np.argmax(act_values[0])  # returns action
     
     def remember(self, ob, action, reward, next_ob, done):
         self.memory.append((ob, action, reward, next_ob, done))
@@ -83,6 +83,8 @@ class DQNAgent:
             q_target_f[0][action] = q_target
             #print 'target:', q_target_f[0]
             self.model.fit(state, q_target_f, epochs = 1, verbose=0)
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
 
     def load(self, name):
         self.model.load_weights(name)
@@ -96,7 +98,7 @@ def loadData():
 
 if __name__ == "__main__":
     X, Y = loadData()
-    env = gym.make('imgreg_train-v0')
+    env = gym.make('imgreg_train-v1')
     agent = DQNAgent()
     batch_size = 64
 
@@ -110,7 +112,7 @@ if __name__ == "__main__":
         for time in range(500):
             # env.render()
             state, tstate = ob
-            action = agent.act(tstate)
+            action = agent.act(state)
             next_ob, reward, done, _ = env.step(action)
             agent.remember(ob, action, reward, next_ob, done)
             ob = next_ob
