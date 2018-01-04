@@ -10,11 +10,10 @@ from keras.optimizers import Adam
 from copy import deepcopy
 import h5py
 
-EPISODES = 300
+EPISODES = 100
 
 class DQNAgent:
     def __init__(self):
-        self.memory = deque(maxlen=2000)
         self.gamma = 0.95    # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
@@ -24,12 +23,12 @@ class DQNAgent:
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
-        input_img = Input(shape = (3, 256, 256), name = 'X')
+        input_img = Input(shape = (3, 64, 64), name = 'X')
         x = Conv2D(8, (3, 3), strides = (2, 2), data_format = 'channels_first',\
                         padding = 'same', name = 'conv1')(input_img)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
-        x = Conv2D(32, (3, 3), strides = (2, 2), data_format = 'channels_first',\
+        x = Conv2D(16, (3, 3), strides = (2, 2), data_format = 'channels_first',\
                         padding = 'same', name = 'conv2')(x)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
@@ -37,27 +36,25 @@ class DQNAgent:
                         padding = 'same', name = 'conv3')(x)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
-        x = Conv2D(128, (3, 3), strides = (2, 2), data_format = 'channels_first',\
-                        padding = 'same', name = 'conv4')(x)
-        x = BatchNormalization()(x)
-        x = Activation('relu')(x)
         x = Conv2D(64, (3, 3), strides = (2, 2), data_format = 'channels_first',\
-                        padding = 'same', name = 'conv5')(x)
+                        padding = 'same', name = 'conv4')(x)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
         x = Flatten(name = 'flatten')(x)
         x = Dense(512, activation = 'relu', name = 'fc_1')(x)
-        x = Dense(128, activation = 'relu', name = 'fc_2')(x)
-        y = Dense(4, activation = 'relu', name = 'Y')(x)
+        x = Dense(256, activation = 'relu', name = 'fc_2')(x)
+        x = Dense(128, activation = 'relu', name = 'fc_3')(x)
+        y = Dense(4, activation = 'linear', name = 'Y')(x)
         model = Model(input_img, y)
 
         model.compile(loss='mse',\
                       optimizer=Adam(lr=self.learning_rate))
         print model.summary()
         return model
+
     # TODO : Break ties arbitrarily
     def act(self, state):
-        state = np.reshape(state, (1, 3, 256, 256))
+        state = np.reshape(state, (1, 3, 64, 64))
         print self.model.predict(state)[0]
         return np.argmax(self.model.predict(state)[0])
 

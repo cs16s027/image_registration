@@ -10,11 +10,10 @@ from keras.optimizers import Adam
 from copy import deepcopy
 import h5py
 
-EPISODES = 700
+EPISODES = 100
 
 class DQNAgent:
     def __init__(self):
-        self.memory = deque(maxlen=2000)
         self.gamma = 0.95    # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
@@ -24,12 +23,12 @@ class DQNAgent:
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
-        input_img = Input(shape = (3, 256, 256), name = 'X')
+        input_img = Input(shape = (3, 64, 64), name = 'X')
         x = Conv2D(8, (3, 3), strides = (2, 2), data_format = 'channels_first',\
                         padding = 'same', name = 'conv1')(input_img)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
-        x = Conv2D(32, (3, 3), strides = (2, 2), data_format = 'channels_first',\
+        x = Conv2D(16, (3, 3), strides = (2, 2), data_format = 'channels_first',\
                         padding = 'same', name = 'conv2')(x)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
@@ -37,17 +36,14 @@ class DQNAgent:
                         padding = 'same', name = 'conv3')(x)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
-        x = Conv2D(128, (3, 3), strides = (2, 2), data_format = 'channels_first',\
-                        padding = 'same', name = 'conv4')(x)
-        x = BatchNormalization()(x)
-        x = Activation('relu')(x)
         x = Conv2D(64, (3, 3), strides = (2, 2), data_format = 'channels_first',\
-                        padding = 'same', name = 'conv5')(x)
+                        padding = 'same', name = 'conv4')(x)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
         x = Flatten(name = 'flatten')(x)
         x = Dense(512, activation = 'relu', name = 'fc_1')(x)
-        x = Dense(128, activation = 'relu', name = 'fc_2')(x)
+        x = Dense(256, activation = 'relu', name = 'fc_2')(x)
+        x = Dense(128, activation = 'relu', name = 'fc_3')(x)
         y = Dense(4, activation = 'linear', name = 'Y')(x)
         model = Model(input_img, y)
 
@@ -56,7 +52,6 @@ class DQNAgent:
         print model.summary()
         return model
 
-    # TODO : Break ties arbitrarily
     def act(self, tstate):
         greedyfellow = []
         for a in range(4):
@@ -65,14 +60,17 @@ class DQNAgent:
             sign = 1 if a % 2 == 0 else -1
             cstate[direction] += sign
             greedyfellow.append(np.sum((cstate - self.target) ** 2))
-        return np.argmin(greedyfellow)
+        greedyfellow = np.array(greedyfellow)
+        min_actions = np.argwhere(greedyfellow == np.min(greedyfellow))[0]
+        index = np.random.randint(0, len(min_actions))
+        return min_actions[index]
 
     def learn(self):
         for ob, action, reward, next_ob, done in self.episode:
             state, tstate = ob
-            state = np.reshape(state, (1, 3, 256, 256))
+            state = np.reshape(state, (1, 3, 64, 64))
             next_state, next_tstate = next_ob
-            next_state = np.reshape(next_state, (1, 3, 256, 256))
+            next_state = np.reshape(next_state, (1, 3, 64, 64))
             q_target = reward
             if not done:
                 next_action = self.act(next_tstate)
@@ -117,6 +115,6 @@ if __name__ == "__main__":
             if done:
                 print("episode: {}/{}, time: {}".format(e, EPISODES, time))
                 break
-            agent.learn()
-        if e % 10 == 0:
+        agent.learn()
+        if (e + 1) % 10 == 0:
             agent.save("models/imgreg_dqn.h5")

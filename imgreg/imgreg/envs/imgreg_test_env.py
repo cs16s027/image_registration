@@ -9,8 +9,8 @@ class ImgRegTest(gym.Env):
     metadata = {'render.modes': ['human']}
     def __init__(self):
         self.viewer = None
-        self.height, self.width = 256, 256
-        self.observation_space = spaces.Box(low=0, high=255, shape=(self.height, self.width))
+        self.height, self.width = 64, 64
+        self.observation_space = spaces.Box(low = 0, high = 63, shape=(self.height, self.width))
         self.action_space = spaces.Discrete(4)
         self.epsilon = 2
         self.reward = 0.0

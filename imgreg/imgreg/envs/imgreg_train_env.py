@@ -9,15 +9,15 @@ class ImgRegTrain(gym.Env):
     metadata = {'render.modes': ['human']}
     def __init__(self):
         self.viewer = None
-        self.height, self.width = 256, 256
-        self.observation_space = spaces.Box(low=0, high=255, shape=(self.height, self.width))
+        self.height, self.width = 64, 64
+        self.observation_space = spaces.Box(low=0, high=63, shape=(self.height, self.width))
         self.action_space = spaces.Discrete(4)
         self.epsilon = 2
         self.bonus = 10
         self.registered = False
 
     def _step(self, action):
-        reward = self.act(action)
+        reward = self.act(int(action))
         ob = self._get_obs()
         return ob, reward, self.registered, {'Hi' : 'boss'}
 
@@ -54,7 +54,7 @@ class ImgRegTrain(gym.Env):
 
     def act(self, action):
         # Parsing the action
-        old_tstate = self.tstate
+        old_tstate = deepcopy(self.tstate)
         direction = action / 2
         sign = 1 if action % 2 == 0 else -1
         self.tstate[direction] += sign
