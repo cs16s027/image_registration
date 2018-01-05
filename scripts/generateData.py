@@ -15,15 +15,16 @@ def getData(images, labels):
 
 def translate(digit):
     num = 10
+    trange = 5
     data = []
     for i in range(num):
         image = np.zeros((64, 64), dtype = np.float32)
         x, y = np.random.randint(0, 64-28, 2)
-        tvector = np.random.randint(-30, 30, 2)
+        tvector = np.random.randint(-trange, trange, 2)
         while x + tvector[1] + digit.shape[0] > 64 or y + tvector[0] + digit.shape[1] > 64\
         or x + tvector[1] < 0 or y + tvector[0] < 0:
             x, y = np.random.randint(0, 64-28, 2)
-            tvector = np.random.randint(-30, 30, 2)
+            tvector = np.random.randint(-trange, trange, 2)
         image[x : x + digit.shape[0], y : y + digit.shape[1]] = digit
         tmatrix = np.float32([ [1, 0, tvector[0]], [0, 1, tvector[1]] ])
         trans_image = cv2.warpAffine(image, tmatrix, (64, 64))

@@ -13,8 +13,11 @@ class ImgRegTrainv1(gym.Env):
         self.observation_space = spaces.Box(low=0, high=63, shape=(self.height, self.width))
         self.action_space = spaces.Discrete(5)
         self.epsilon = 2
-        self.bonus = 10
-        self.penalty = -10
+        self.bonus = 1
+        self.penalty = -0.75
+        self.reward_bound = 2 * 64
+        self.exploration_bound = 7
+        self.exploration_penalty = -0.25
         self.registered = False
 
     def _step(self, action):
@@ -69,13 +72,22 @@ class ImgRegTrainv1(gym.Env):
             sign = 1 if action % 2 == 0 else -1
             self.tstate[direction] += sign
 
+            # Check if it exceeds allowable value
+            abs_state = np.absolute(self.tstate)
+            if abs_state[0] >= self.exploration_bound or abs_state[1] >= self.exploration_bound:
+                self.tstate = deepcopy(old_tstate)
+                return self.exploration_penalty
+
             # The action
             self.tmatrix = np.float32([[1, 0, self.tstate[0]], [0, 1, self.tstate[1]]])
             self.trans_image = cv2.warpAffine(self.ref_image, self.tmatrix, (self.height, self.width))
             self.state = np.stack([self.ref_image, self.def_image, self.trans_image], axis = 0)
 
             # No immediate rewards
-            return 0.0
+            D_old = np.sum((old_tstate - self.target) ** 2)
+            D_new = np.sum((self.tstate - self.target) ** 2)
+            reward = float(D_old - D_new) / self.reward_bound
+            return reward
 
 ACTION_MEANING = {
         0 : "RIGHT",\
