@@ -11,6 +11,11 @@ register(
 )
 
 register(
+    id = 'imgreg_train-v2',
+    entry_point='imgreg.envs:ImgRegTrainv2',
+)
+
+register(
     id = 'imgreg_test-v0',
     entry_point='imgreg.envs:ImgRegTest',
 )
@@ -18,4 +23,9 @@ register(
 register(
     id = 'imgreg_test-v1',
     entry_point='imgreg.envs:ImgRegTestv1',
+)
+
+register(
+    id = 'imgreg_test-v2',
+    entry_point='imgreg.envs:ImgRegTestv2',
 )
