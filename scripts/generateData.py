@@ -8,7 +8,7 @@ def getData(images, labels):
     for i in range(images.shape[0]):
         image = images[i]
         label = int(labels[i])
-        if len(data[label]) == 10:
+        if len(data[label]) == 100:
             continue
         data[label].append(image)
     return data
@@ -35,15 +35,19 @@ def writeData(stage, stage_data):
     data = []
     metadata = open('data/%s.txt' % stage, 'w')
     for label in stage_data.keys():
-        digit = stage_data[label].pop()
-        data = translate(digit)
-        for index, (image, trans_image, tvector) in enumerate(data):
-            image_path = 'data/%s/%s_%s_ref.jpg' % (stage, str(label), str(index + 1))
-            trans_image_path = 'data/%s/%s_%s_def.jpg' % (stage, str(label), str(index + 1))
-            x, y = tvector
-            cv2.imwrite(image_path, image)
-            cv2.imwrite(trans_image_path, trans_image)
-            metadata.write('%s,%s,%s,%s\n' % (image_path, trans_image_path, str(x), str(y)))
+        digits = stage_data[label]
+        digits_index = len(digits) - 1
+        while digits_index >= 0:
+            digit = digits.pop()
+            data = translate(digit)
+            for index, (image, trans_image, tvector) in enumerate(data):
+                image_path = 'data/%s/%s_%s_%s_ref.jpg' % (stage, str(label), str(digits_index + 1), str(index + 1))
+                trans_image_path = 'data/%s/%s_%s_%s_def.jpg' % (stage, str(label), str(digits_index + 1), str(index + 1))
+                x, y = tvector
+                cv2.imwrite(image_path, image)
+                cv2.imwrite(trans_image_path, trans_image)
+                metadata.write('%s,%s,%s,%s\n' % (image_path, trans_image_path, str(x), str(y)))
+            digits_index -= 1
     metadata.close()
 
 if __name__ == '__main__':

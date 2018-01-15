@@ -1,5 +1,7 @@
+import os
 import imgreg
 import gym
+import tensorflow as tf
 
 from baselines import deepq
 
@@ -12,14 +14,15 @@ def main():
         env,
         q_func=model,
         lr = 1e-3,
-        max_timesteps = 100000,
+        max_timesteps = 500000,
         buffer_size = 50000,
         exploration_fraction = 0.1,
         exploration_final_eps = 0.02,
         print_freq = 10,
+        prioritized_replay = True
     )
-    print("Saving model to imgreg_model.pkl")
-    act.save("models/imgreg_model.pkl")
+    print("Saving model")
+    act.save("models/iter_1.pkl")
 
 
 if __name__ == '__main__':

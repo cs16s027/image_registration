@@ -55,7 +55,7 @@ class DQNAgent:
     # TODO : Break ties arbitrarily
     def act(self, state):
         state = np.reshape(state, (1, 3, 64, 64))
-        print self.model.predict(state)[0]
+        #print self.model.predict(state)[0]
         return np.argmax(self.model.predict(state)[0])
 
     def load(self, name):
@@ -90,4 +90,4 @@ if __name__ == "__main__":
             if done:
                 break
         prediction = (next_ob[1][0], next_ob[1][1])
-        print "Target : (%s, %s), Prediction : (%s, %s)" % (-Y[e][1], -Y[e][0], prediction[0], prediction[1])
+        print "Target : (%s, %s), Prediction : (%s, %s)" % (Y[e][0], Y[e][1], prediction[0], prediction[1])

@@ -33,8 +33,7 @@ class DQNAgent:
         self.memory = deque(maxlen=500)
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.98
-        self.learning_rate = 0.001
+        self.epsilon_decay = 0.995
         self.action_size = 5
 
     def _build_model(self):
@@ -134,7 +133,7 @@ class DQNAgent:
             for time in range(500):
                 # env.render()
                 state, tstate = ob
-                if np.random.randn() < 0.5:
+                if np.random.randn() < 0.99:
                     action = self.actGreedily(tstate)
                 else:
                     action = self.actExploratorily(state) 
@@ -174,7 +173,8 @@ if __name__ == "__main__":
     X, Y = loadData()
     env = gym.make('imgreg_train-v1')
     agent = DQNAgent()
-    agent.batch_size = 16
+    agent.batch_size = 32
+    agent.load('models/imgreg_dqn_v1.h5')
 
     epochs = 100
 

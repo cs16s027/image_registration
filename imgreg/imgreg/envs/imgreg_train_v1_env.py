@@ -12,11 +12,11 @@ class ImgRegTrainv1(gym.Env):
         self.height, self.width = 64, 64
         self.observation_space = spaces.Box(low=0, high=63, shape=(self.height, self.width))
         self.action_space = spaces.Discrete(5)
-        self.epsilon = 2
+        self.epsilon = 0
         self.bonus = 1
-        self.penalty = -0.75
-        self.reward_bound = 2 * 64
+        self.penalty = -1
         self.exploration_bound = 7
+        self.reward_bound = 1.5 * ( 2 * self.exploration_bound + 1 )
         self.exploration_penalty = -0.25
         self.registered = False
 
@@ -64,7 +64,7 @@ class ImgRegTrainv1(gym.Env):
             if D <= self.epsilon:    
                 return self.bonus
             else:
-                return self.penalty
+                return self.penalty #* D / (5 * 5)
         else:
             # Get direction of action
             old_tstate = deepcopy(self.tstate)
