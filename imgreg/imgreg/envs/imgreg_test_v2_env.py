@@ -19,16 +19,16 @@ class ImgRegTestv2(gym.Env):
     def __init__(self):
         self.viewer = None
         self.height, self.width = 64, 64
-        self.observation_space = spaces.Box(low=0, high=63, shape=(3, self.height, self.width))
+        self.observation_space = spaces.Box(low=0, high=63, shape=(2, self.height, self.width))
         self.bound = 25
         self.action_space = spaces.Discrete(4)
         self.registered = False
         self.max_steps = 50
-        self.max_steps_decay = 0.9995
         self.max_steps_min = 50
         self.close = 2
         self.epochs = 1
         self.steps = 0
+        self.track_reward = 0.0
 
     def _step(self, action):
         self.steps += 1
@@ -41,7 +41,7 @@ class ImgRegTestv2(gym.Env):
 
     def _reset(self):
         self.initialize()
-        self.state = self.preprocess(np.stack([self.ref_image, self.def_image, self.trans_image], axis = 0))
+        self.state = self.preprocess(np.stack([self.def_image, self.trans_image], axis = 0))
         self.registered = False
         self.tstate = np.float32([0, 0])
         self.steps = 0
@@ -56,16 +56,19 @@ class ImgRegTestv2(gym.Env):
 
     def initialize(self):
         print("Number of steps = {}".format(self.steps))
-        print("Episode-{} in epoch {}, max_steps = {}".format(self.count_in_epoch, self.epochs, self.max_steps))
+        print("Episode-{} in epoch {}, max_steps = {}, reward = {}".format(self.count_in_epoch, self.epochs, self.max_steps, self.track_reward))
+        self.track_reward = 0.0
         self.ref_image = deepcopy(self.X[self.count_in_epoch][0])
         self.def_image = deepcopy(self.X[self.count_in_epoch][1])
         self.trans_image = deepcopy(self.ref_image)
         self.target = np.float32(self.Y[self.count_in_epoch])
 
-        if self.max_steps > self.max_steps_min:
-            self.max_steps = int(self.max_steps * self.max_steps_decay)
-
         self.count_in_epoch += 1
+
+        if self.count_in_epoch % 25 == 0:
+            if self.max_steps > self.max_steps_min:
+                self.max_steps -= 1
+
         if self.count_in_epoch == self.X.shape[0]:
             self.count_in_epoch = 0
             self.epochs += 1
@@ -85,7 +88,7 @@ class ImgRegTestv2(gym.Env):
             # The action
             self.tmatrix = np.float32([[1, 0, self.tstate[0]], [0, 1, self.tstate[1]]])
             self.trans_image = cv2.warpAffine(self.ref_image, self.tmatrix, (self.height, self.width))
-            self.state = self.preprocess(np.stack([self.ref_image, self.def_image, self.trans_image], axis = 0))
+            self.state = self.preprocess(np.stack([self.def_image, self.trans_image], axis = 0))
 
         # Rewards
         D_old = np.abs(old_tstate[direction] - self.target[direction])
@@ -104,8 +107,10 @@ class ImgRegTestv2(gym.Env):
             self.registered = True
         
         self.render()
-        time.sleep(0.5)
+        time.sleep(0.2)
         print("Action = {}, old = {}, new = {}, reward = {}".format(ACTION_MEANING[action], old_tstate, self.tstate, reward))
+
+        self.track_reward += reward
         return reward
 
     def loadData(self, data_path):
@@ -126,7 +131,7 @@ class SimpleImageViewer(object):
         self.isopen = False
         self.display = display
     def imshow(self, arr):
-        ref_image, def_image, trans_image = arr[0], arr[1], arr[2]
+        def_image, trans_image = arr[0], arr[1]
         image = np.zeros((64, 64))
         image += def_image / 3
         image += trans_image
