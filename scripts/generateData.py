@@ -15,7 +15,7 @@ def getData(images, labels):
 
 def translate(digit):
     num = 10
-    trange = 5
+    trange = 25
     data = []
     for i in range(num):
         image = np.zeros((64, 64), dtype = np.float32)

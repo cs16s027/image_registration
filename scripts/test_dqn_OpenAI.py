@@ -17,7 +17,7 @@ def main():
         while not done:
             # env.render()
             state = ob
-            action = act(np.reshape(state, (1, 64, 64)))
+            action = act(np.reshape(state, (1, 3, 64, 64)))
             next_ob, reward, done, _ = env.step(action)
             ob = next_ob
         print("Target : (%s, %s), Prediction : (%s, %s)" % (env.target[0], env.target[1], env.tstate[0], env.tstate[1]))
