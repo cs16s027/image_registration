@@ -13,9 +13,8 @@ def getData(images, labels):
         data[label].append(image)
     return data
 
-def translate(digit):
+def translate(digit, trange = 25):
     num = 10
-    trange = 25
     data = []
     for i in range(num):
         image = np.zeros((64, 64), dtype = np.float32)
@@ -39,7 +38,11 @@ def writeData(stage, stage_data):
         digits_index = len(digits) - 1
         while digits_index >= 0:
             digit = digits.pop()
-            data = translate(digit)
+            if np.random.random() <= 0.7:
+                trange = 5
+            else:
+                trange = 25
+            data = translate(digit, trange)
             for index, (image, trans_image, tvector) in enumerate(data):
                 image_path = 'data/%s/%s_%s_%s_ref.jpg' % (stage, str(label), str(digits_index + 1), str(index + 1))
                 trans_image_path = 'data/%s/%s_%s_%s_def.jpg' % (stage, str(label), str(digits_index + 1), str(index + 1))
@@ -54,6 +57,6 @@ if __name__ == '__main__':
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     train = getData(x_train, y_train)
     test  = getData(x_test, y_test)
-    writeData('train', train)
-    writeData('test', test)
+    writeData('train-1', train)
+    writeData('test-1', test)
 

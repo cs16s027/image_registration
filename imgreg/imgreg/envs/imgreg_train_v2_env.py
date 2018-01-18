@@ -19,13 +19,13 @@ class ImgRegTrainv2(gym.Env):
     def __init__(self):
         self.viewer = None
         self.height, self.width = 64, 64
-        self.observation_space = spaces.Box(low=0, high=63, shape=(2, self.height, self.width))
+        self.observation_space = spaces.Box(low = 0, high = 1.0, shape= (2, self.height, self.width))
         self.bound = 25
         self.action_space = spaces.Discrete(4)
         self.registered = False
         self.max_steps = 50
         self.max_steps_min = 50
-        self.close = 2
+        self.close = 5
         self.epochs = 1
         self.steps = 0
         self.track_reward = 0.0
@@ -55,8 +55,8 @@ class ImgRegTrainv2(gym.Env):
         return 255 * self.state
 
     def initialize(self):
-        print("Number of steps = {}".format(self.steps))
-        print("Episode-{} in epoch {}, max_steps = {}, reward = {}".format(self.count_in_epoch, self.epochs, self.max_steps, self.track_reward))
+        print("Number of steps = {}/{}".format(self.steps, self.max_steps))
+        print("Episode-{} in epoch {}, reward = {}".format(self.count_in_epoch, self.epochs, self.track_reward))
         self.track_reward = 0.0
         self.ref_image = deepcopy(self.X[self.count_in_epoch][0])
         self.def_image = deepcopy(self.X[self.count_in_epoch][1])
@@ -94,10 +94,11 @@ class ImgRegTrainv2(gym.Env):
         D_old = np.abs(old_tstate[direction] - self.target[direction])
         D_new = np.abs(self.tstate[direction] - self.target[direction])
         reward = (D_old * D_old - D_new * D_new) / (2 *  self.bound + 1)
-        #reward = reward if D_old - D_new > 0.0 else -reward
         D = np.max(np.abs(self.tstate - self.target))
-        if D <= self.close:
-            reward += 1.0
+
+        # Additional rewards
+        if D == 0:
+            reward += 5.0
             terminate = True
         else:
             terminate = False
@@ -106,10 +107,10 @@ class ImgRegTrainv2(gym.Env):
         if terminate == True or self.steps == self.max_steps:
             self.registered = True
         
-        if self.count_in_epoch % 50 == 0:
-            self.render()
-            time.sleep(0.1)
-            print("Action = {}, old = {}, new = {}, reward = {}".format(ACTION_MEANING[action], old_tstate, self.tstate, reward))
+        #if self.count_in_epoch % 50 == 0:
+        #    self.render()
+        #    time.sleep(0.1)
+        #    #print("Action = {}, old = {}, new = {}, reward = {}".format(ACTION_MEANING[action], old_tstate, self.tstate, reward))
 
         self.track_reward += reward
         return reward

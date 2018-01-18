@@ -98,16 +98,17 @@ class ImgRegTestv2(gym.Env):
         D = np.max(np.abs(self.tstate - self.target))
         if D <= self.close:
             reward += 1.0
-            terminate = True
-        else:
-            terminate = False
 
         # Episode termination
-        if terminate == True or self.steps == self.max_steps:
+        if self.steps == self.max_steps:
             self.registered = True
         
         self.render()
+<<<<<<< HEAD
+        time.sleep(0.1)
+=======
         time.sleep(0.2)
+>>>>>>> 379c626803fc5c353a6d829bafd09fe35717d995
         print("Action = {}, old = {}, new = {}, reward = {}".format(ACTION_MEANING[action], old_tstate, self.tstate, reward))
 
         self.track_reward += reward
