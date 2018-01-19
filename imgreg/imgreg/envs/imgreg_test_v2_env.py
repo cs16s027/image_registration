@@ -93,23 +93,18 @@ class ImgRegTestv2(gym.Env):
         # Rewards
         D_old = np.abs(old_tstate[direction] - self.target[direction])
         D_new = np.abs(self.tstate[direction] - self.target[direction])
-        reward = (D_old * D_old - D_new * D_new) / (2 *  self.bound + 1)
-        #reward = reward if D_old - D_new > 0.0 else -reward
+        reward = 1.0 if D_old - D_new > 0.0 else -1.0
         D = np.max(np.abs(self.tstate - self.target))
-        if D <= self.close:
-            reward += 1.0
+        if D == 0.0:
+            reward += 5.0
 
         # Episode termination
         if self.steps == self.max_steps:
             self.registered = True
         
-        self.render()
-<<<<<<< HEAD
-        time.sleep(0.1)
-=======
-        time.sleep(0.2)
->>>>>>> 379c626803fc5c353a6d829bafd09fe35717d995
-        print("Action = {}, old = {}, new = {}, reward = {}".format(ACTION_MEANING[action], old_tstate, self.tstate, reward))
+        #self.render()
+        #time.sleep(0.2)
+        #print("Action = {}, old = {}, new = {}, reward = {}".format(ACTION_MEANING[action], old_tstate, self.tstate, reward))
 
         self.track_reward += reward
         return reward

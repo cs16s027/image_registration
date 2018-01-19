@@ -39,7 +39,7 @@ def writeData(stage, stage_data):
         while digits_index >= 0:
             digit = digits.pop()
             if np.random.random() <= 0.7:
-                trange = 5
+                trange = 25
             else:
                 trange = 25
             data = translate(digit, trange)
@@ -57,6 +57,6 @@ if __name__ == '__main__':
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     train = getData(x_train, y_train)
     test  = getData(x_test, y_test)
-    writeData('train-1', train)
-    writeData('test-1', test)
+    writeData('train', train)
+    writeData('test', test)
 

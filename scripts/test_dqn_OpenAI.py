@@ -8,15 +8,10 @@ from baselines import deepq
 
 def main():
     env = gym.make("imgreg_test-v2")
-    data_path = 'data/test-out.h5'
+    data_path = 'data/test.h5'
     env.loadData(data_path)
-<<<<<<< HEAD
-    #act = deepq.load('models/inprogress.pkl')
-    act = deepq.load('models/iter_5.pkl')
     error = 0.0
-=======
-    act = deepq.load('models/iter_2.pkl')
->>>>>>> 379c626803fc5c353a6d829bafd09fe35717d995
+    act = deepq.load('models/inprogress_6.1.pkl')
     for e in range(100):
         ob = env.reset()
         done = False
