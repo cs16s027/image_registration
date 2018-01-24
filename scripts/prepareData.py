@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import h5py
 
-for stage in ['train', 'test']:
+for stage in ['test-devnagari']:
     data = [line.strip().split(',') for line in open('data/%s.txt' % stage, 'r').readlines()]
     np.random.shuffle(data)
     X, Y = [], []

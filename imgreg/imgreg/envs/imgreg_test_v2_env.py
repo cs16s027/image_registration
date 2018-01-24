@@ -102,8 +102,8 @@ class ImgRegTestv2(gym.Env):
         if self.steps == self.max_steps:
             self.registered = True
         
-        #self.render()
-        #time.sleep(0.2)
+        self.render()
+        time.sleep(0.01)
         #print("Action = {}, old = {}, new = {}, reward = {}".format(ACTION_MEANING[action], old_tstate, self.tstate, reward))
 
         self.track_reward += reward
@@ -151,5 +151,6 @@ class SimpleImageViewer(object):
             self.window.close()
             self.isopen = False
     def __del__(self):
+        print('works')
         self.close()
 
