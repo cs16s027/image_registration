@@ -21,6 +21,11 @@ register(
 )
 
 register(
+    id = 'imgreg_train-v4',
+    entry_point='imgreg.envs:ImgRegTrainv4',
+)
+
+register(
     id = 'imgreg_test-v0',
     entry_point='imgreg.envs:ImgRegTest',
 )
