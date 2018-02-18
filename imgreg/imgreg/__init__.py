@@ -39,3 +39,8 @@ register(
     id = 'imgreg_test-v2',
     entry_point='imgreg.envs:ImgRegTestv2',
 )
+
+register(
+    id = 'imgreg_test-v3',
+    entry_point='imgreg.envs:ImgRegTestv3',
+)

@@ -15,19 +15,21 @@ ACTION_MEANING = {
         3 : "UP",\
 }
 
-class ImgRegTrainv4(gym.Env):
+class ImgRegTestv3(gym.Env):
     def __init__(self):
         self.viewer = None
-        self.height, self.width = 256, 256
-        self.observation_space = spaces.Box(low = 0, high = 1.0, shape= (2, self.height, self.width))
+        self.height, self.width = 64, 64
+        self.observation_space = spaces.Box(low=0, high=63, shape=(2, self.height, self.width))
         self.bound = 25
         self.action_space = spaces.Discrete(4)
         self.registered = False
         self.max_steps = 50
         self.max_steps_min = 50
+        self.close = 2
         self.epochs = 1
         self.steps = 0
         self.track_reward = 0.0
+        self.write_to_disk = 1000
 
     def _step(self, action):
         self.steps += 1
@@ -54,8 +56,8 @@ class ImgRegTrainv4(gym.Env):
         return 255 * self.state
 
     def initialize(self):
-        print("Number of steps = {}/{}".format(self.steps, self.max_steps))
-        print("Episode-{} in epoch {}, reward = {}".format(self.count_in_epoch, self.epochs, self.track_reward))
+        print("Number of steps = {}".format(self.steps))
+        print("Episode-{} in epoch {}, max_steps = {}, reward = {}".format(self.count_in_epoch, self.epochs, self.max_steps, self.track_reward))
         self.track_reward = 0.0
         self.ref_image = deepcopy(self.X[self.count_in_epoch][0])
         self.def_image = deepcopy(self.X[self.count_in_epoch][1])
@@ -92,25 +94,21 @@ class ImgRegTrainv4(gym.Env):
         # Rewards
         D_old = np.abs(old_tstate[direction] - self.target[direction])
         D_new = np.abs(self.tstate[direction] - self.target[direction])
-        reward = 1.0 if D_new < D_old else -1.0
-
-        # Additional rewards
+        reward = 1.0 if D_old - D_new > 0.0 else -1.0
         D = np.max(np.abs(self.tstate - self.target))
-        if D == 0:
+        if D == 0.0:
             reward += 5.0
-            terminate = True
-        else:
-            terminate = False
 
         # Episode termination
-        if terminate == True or self.steps == self.max_steps:
+        if self.steps == self.max_steps:
             self.registered = True
         
-        self.track_reward += reward
-
         self.render()
-        time.sleep(0.01)
+        time.sleep(0.001)
 
+        #print("Action = {}, old = {}, new = {}, reward = {}".format(ACTION_MEANING[action], old_tstate, self.tstate, reward))
+
+        self.track_reward += reward
         return reward
 
     def loadData(self, data_path):
@@ -130,17 +128,22 @@ class SimpleImageViewer(object):
         self.window = None
         self.isopen = False
         self.display = display
+        self.write_to_disk = 1000
     def imshow(self, arr):
         def_image, trans_image = arr[0], arr[1]
-        image = np.zeros((256, 256))
+        image = np.zeros((64, 64))
         image += def_image / 3
-        image += trans_image / 2
+        image += trans_image
         if self.window is None:
             height, width = image.shape
             self.window = pyglet.window.Window(width = 5 * width, height = 5 * height, display = self.display)
             self.width = width
             self.height = height
             self.isopen = True
+        # Begin video processing
+        cv2.imwrite('videos/{}.jpg'.format(self.write_to_disk), image)
+        self.write_to_disk += 1
+        # End video processing
         cv2.imwrite('image.jpg', image)
         image = cv2.imread('image.jpg', 0)
         image = pyglet.image.ImageData(self.width, self.height, 'I', image.tobytes(), pitch = self.width * -1)
@@ -155,5 +158,6 @@ class SimpleImageViewer(object):
             self.window.close()
             self.isopen = False
     def __del__(self):
+        print('works')
         self.close()
 

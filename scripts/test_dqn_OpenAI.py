@@ -7,8 +7,8 @@ import tensorflow as tf
 from baselines import deepq
 
 def main():
-    env = gym.make("imgreg_test-v2")
-    data_path = 'data/test.h5'
+    env = gym.make("imgreg_test-v3")
+    data_path = 'data/test-devnagari.h5'
     env.loadData(data_path)
     total_error = 0.0
     act = deepq.load('models/iter_5.pkl')

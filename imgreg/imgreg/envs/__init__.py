@@ -6,3 +6,4 @@ from imgreg.envs.imgreg_train_v4_env import ImgRegTrainv4
 from imgreg.envs.imgreg_test_env import ImgRegTest
 from imgreg.envs.imgreg_test_v1_env import ImgRegTestv1
 from imgreg.envs.imgreg_test_v2_env import ImgRegTestv2
+from imgreg.envs.imgreg_test_v3_env import ImgRegTestv3
