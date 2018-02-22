@@ -17,15 +17,14 @@ ACTION_MEANING = {
 
 class ImgRegTrainv4(gym.Env):
     def __init__(self):
-        self.viewer = None
         self.height, self.width = 256, 256
         self.observation_space = spaces.Box(low = 0, high = 1.0, shape= (2, self.height, self.width))
         self.bound = 25
         self.action_space = spaces.Discrete(4)
         self.registered = False
-        self.max_steps = 50
-        self.max_steps_min = 50
-        self.epochs = 1
+        self.max_steps = 30
+        self.max_steps_max = 30
+        self.epochs = 0
         self.steps = 0
         self.track_reward = 0.0
 
@@ -64,16 +63,14 @@ class ImgRegTrainv4(gym.Env):
 
         self.count_in_epoch += 1
 
-        if self.count_in_epoch % 25 == 0:
-            if self.max_steps > self.max_steps_min:
-                self.max_steps -= 1
-
         if self.count_in_epoch == self.X.shape[0]:
             self.count_in_epoch = 0
             self.epochs += 1
+            #self.loadData('data/KLA/train/{}.h5'.format(min(self.epochs, 1)))
             x = np.arange(self.X.shape[0])
             np.random.shuffle(x)
             self.X, self.Y = self.X[x], self.Y[x]
+            self.max_steps = min(self.max_steps + 5, self.max_steps_max)
 
     def act(self, action):
         # Get direction of action
@@ -108,9 +105,6 @@ class ImgRegTrainv4(gym.Env):
         
         self.track_reward += reward
 
-        self.render()
-        time.sleep(0.01)
-
         return reward
 
     def loadData(self, data_path):
@@ -119,41 +113,4 @@ class ImgRegTrainv4(gym.Env):
         self.count_in_epoch = 0
         print("size of the data:", self.X.shape)
 
-    def render(self, mode = 'human', close = False):
-        img = self._get_image()
-        if self.viewer is None:
-            self.viewer = SimpleImageViewer()
-        self.viewer.imshow(img)
-
-class SimpleImageViewer(object):
-    def __init__(self, display=None):
-        self.window = None
-        self.isopen = False
-        self.display = display
-    def imshow(self, arr):
-        def_image, trans_image = arr[0], arr[1]
-        image = np.zeros((256, 256))
-        image += def_image / 3
-        image += trans_image / 2
-        if self.window is None:
-            height, width = image.shape
-            self.window = pyglet.window.Window(width = 5 * width, height = 5 * height, display = self.display)
-            self.width = width
-            self.height = height
-            self.isopen = True
-        cv2.imwrite('image.jpg', image)
-        image = cv2.imread('image.jpg', 0)
-        image = pyglet.image.ImageData(self.width, self.height, 'I', image.tobytes(), pitch = self.width * -1)
-        self.window.clear()
-        self.window.switch_to()
-        self.window.dispatch_events()
-        image.blit(2 * self.width, 2 * self.height)
-        self.window.flip()
-
-    def close(self):
-        if self.isopen:
-            self.window.close()
-            self.isopen = False
-    def __del__(self):
-        self.close()
 
