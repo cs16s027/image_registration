@@ -7,7 +7,7 @@ from baselines import deepq
 
 def main():
     env = gym.make("imgreg_train-v5")
-    data_paths = ['data/train/1.h5', 'data/train/2.h5']
+    data_paths = ['data/train/1.h5', 'data/train/2.h5', 'data/train/3.h5', 'data/train/4.h5', 'data/train/5.h5']
     env.loadData(data_paths)
     model = deepq.models.cnn_to_mlp([(16, 8, 4), (32, 4, 2), (32, 3, 1)], [256])
     act = deepq.learn(

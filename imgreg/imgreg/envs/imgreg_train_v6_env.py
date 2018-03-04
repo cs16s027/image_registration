@@ -13,14 +13,15 @@ ACTION_MEANING = {
         1 : "LEFT",\
         2 : "DOWN",\
         3 : "UP",\
+        5 : "STOP"
 }
 
-class ImgRegTrainv5(gym.Env):
+class ImgRegTrainv6(gym.Env):
     def __init__(self):
         self.height, self.width = 64, 64
         self.observation_space = spaces.Box(low = 0, high = 1.0, shape= (2, self.height, self.width))
         self.bound = 25
-        self.action_space = spaces.Discrete(4)
+        self.action_space = spaces.Discrete(5)
         self.registered = False
         self.max_steps = 25
         self.steps = 0
@@ -56,28 +57,21 @@ class ImgRegTrainv5(gym.Env):
         self.target = target
 
     def act(self, action):
-        # Get direction of action
-        old_tstate = deepcopy(self.tstate)
-        direction = int(action / 2)
-        sign = 1 if action % 2 == 0 else -1
-        update = self.tstate[direction] + sign
-        # Check bound 
-        if np.abs(update) <= self.bound:
-            self.tstate[direction] = update
-            # The action
-            self.tmatrix = np.float32([[1, 0, self.tstate[0]], [0, 1, self.tstate[1]]])
-            self.trans_image = cv2.warpAffine(self.ref_image, self.tmatrix, (self.height, self.width))
-            self.state = self.preprocess(np.stack([self.def_image, self.trans_image], axis = 0))
+        if action != 4:
+            # Get direction of action
+            old_tstate = deepcopy(self.tstate)
+            direction = int(action / 2)
+            sign = 1 if action % 2 == 0 else -1
+            update = self.tstate[direction] + sign
+            # Check bound 
+            if np.abs(update) <= self.bound:
+                self.tstate[direction] = update
+                # The action
+                self.tmatrix = np.float32([[1, 0, self.tstate[0]], [0, 1, self.tstate[1]]])
+                self.trans_image = cv2.warpAffine(self.ref_image, self.tmatrix, (self.height, self.width))
+                self.state = self.preprocess(np.stack([self.def_image, self.trans_image], axis = 0))
 
-        # Additional rewards
-        D = np.max(np.abs(self.tstate - self.target))
-        if D == 0:
-            terminate = True
-        else:
-            terminate = False
-
-        # Episode termination
-        if terminate == True or self.steps == self.max_steps:
+        if action == 4 or self.steps == self.max_steps:
             self.registered = True
         
         return 0.0

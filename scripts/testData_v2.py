@@ -54,7 +54,7 @@ def writeData(stage, stage_data):
     metadata.close()
 
 if __name__ == '__main__':
-    base = '/work/image_registration/data/devnagari'
+    base = '/home/iitm/work/image_registration/image_registration/data/devnagari'
     label = 0
     images, labels = [], []
     for f in os.listdir(base):
